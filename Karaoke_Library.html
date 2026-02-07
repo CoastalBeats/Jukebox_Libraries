@@ -98771,13 +98771,15 @@
 
             // Load the table data into an array
             const data = rows.map(row => {
-                const cells = row.getElementsByTagName('td');
-                return {
-                    element: row,
-                    artist: cells.length > 1 ? cells[0].innerText.toLowerCase() : '',
-                    song: cells.length > 1 ? cells[1].innerText.toLowerCase() : ''
-                };
-            });
+  const cells = row.getElementsByTagName('td');
+  if (cells.length < 2) return null; // skip malformed rows
+  return {
+    element: row,
+    artist: cells[0].innerText.toLowerCase(),
+    song: cells[1].innerText.toLowerCase()
+  };
+}).filter(item => item); // remove nulls
+
 
             function performSearch() {
                 const query = document.getElementById('search-input').value.toLowerCase();
@@ -98810,5 +98812,6 @@
     </script>
 </body>
 </html>
+
 
 
