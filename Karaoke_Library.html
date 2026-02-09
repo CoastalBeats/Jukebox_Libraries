@@ -98502,24 +98502,28 @@
 <td>Tube Snake Boogie</td>
 </tr>
 <tr>
-<td>ZZ Top</td>
-<td>Tush</td>
+  <td>ZZ Top</td>
+  <td>Tush</td>
 </tr>
 <tr>
-<td>ZZ Top</td>
-<td>Waitin&#39; For The Bus</td>
+  <td>ZZ Top</td>
+  <td>Waitin&#39; For The Bus</td>
 </tr>
 <tr>
-<td>ZZ Top</td>
-<td>What&#39;s Up With That</td>
+  <td>ZZ Top</td>
+  <td>What&#39;s Up With That</td>
 </tr>
 <tr>
-<td>Zz Ward</td>
-<td>365 Days</td>
+  <td>Zz Ward</td>
+  <td>365 Days</td>
 </tr>
 <tr>
   <td>Zz Ward</td>
   <td>Til The Casket Drops</td>
+</tr>
+<tr>
+  <td>New 2026</td>
+  <td>New 2026</td>
 </tr>
 <tr>
   <td>Alex Warren</td>
@@ -98769,46 +98773,35 @@
             const table = document.getElementById('karaoke-table');
             const rows = Array.from(table.getElementsByTagName('tr'));
 
-            // Load the table data into an array
+            // Build data array from valid rows only
             const data = rows.map(row => {
-  const cells = row.getElementsByTagName('td');
-  if (cells.length < 2) return null; // skip malformed rows
-  return {
-    element: row,
-    artist: cells[0].innerText.toLowerCase(),
-    song: cells[1].innerText.toLowerCase()
-  };
-}).filter(item => item); // remove nulls
+                const cells = row.getElementsByTagName('td');
+                if (cells.length < 2) return null; // skip malformed / header rows
+                return {
+                    element: row,
+                    artist: cells[0].innerText.toLowerCase(),
+                    song: cells[1].innerText.toLowerCase()
+                };
+            }).filter(item => item);
 
-
-            function performSearch() {
+            // Expose performSearch globally so the Search button can call it
+            window.performSearch = function () {
                 const query = document.getElementById('search-input').value.toLowerCase();
                 let found = false;
 
                 data.forEach(item => {
-                    const matches = item.artist.includes(query) || item.song.includes(query);
+                    const matches =
+                        item.artist.includes(query) ||
+                        item.song.includes(query);
+
                     item.element.style.display = matches ? '' : 'none';
                     found = found || matches;
                 });
 
                 const resultsContainer = document.getElementById('search-results');
                 resultsContainer.innerHTML = found ? '' : '<p>No results found.</p>';
-            }
-
-            // Add event listener to search input with debounce
-            document.getElementById('search-input').addEventListener('input', debounce(performSearch, 300));
+            };
         });
-
-        // Debounce function to limit the rate at which the search function is called
-        function debounce(func, delay) {
-            let debounceTimer;
-            return function() {
-                const context = this;
-                const args = arguments;
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => func.apply(context, args), delay);
-            }
-        }
     </script>
 </body>
 </html>
