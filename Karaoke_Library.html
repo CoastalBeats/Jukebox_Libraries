@@ -98768,7 +98768,7 @@
         </tbody>
     </table>
 
-        <script>
+    <script>
         document.addEventListener('DOMContentLoaded', (event) => {
             const table = document.getElementById('karaoke-table');
             const rows = Array.from(table.getElementsByTagName('tr'));
@@ -98787,6 +98787,18 @@
                 };
             }).filter(item => item);
 
+            // ⬇️ NEW: allow pressing Enter in the search box to trigger search
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        window.performSearch();
+                    }
+                });
+            }
+            // ⬆️ end new block
+
             // Expose performSearch globally so the Search button can call it
             window.performSearch = function () {
                 const query = document.getElementById('search-input').value.toLowerCase();
@@ -98804,7 +98816,7 @@
                 let found = false;
                 let index = 0;
 
-                // 👇 Tweak this if you want smoother vs faster
+                // Tweak this if you want smoother vs faster
                 const chunkSize = 100; // rows per frame; lower = smoother on slow phones
 
                 resultsContainer.innerHTML = ''; // clear any previous message
@@ -98835,6 +98847,7 @@
     </script>
 </body>
 </html>
+
 
 
 
