@@ -81920,44 +81920,78 @@
             const table = document.getElementById('karaoke-table');
             const rows = Array.from(table.getElementsByTagName('tr'));
 
-            // Load the table data into an array
+            // Build data array from valid rows only, and precompute the searchable text
             const data = rows.map(row => {
                 const cells = row.getElementsByTagName('td');
+                if (cells.length < 2) return null; // skip malformed/header rows
+                const artist = cells[0].innerText.toLowerCase();
+                const song   = cells[1].innerText.toLowerCase();
                 return {
                     element: row,
-                    artist: cells.length > 1 ? cells[0].innerText.toLowerCase() : '',
-                    song: cells.length > 1 ? cells[1].innerText.toLowerCase() : ''
+                    artist,
+                    song,
+                    text: artist + ' ' + song
                 };
-            });
+            }).filter(item => item);
 
-            function performSearch() {
-                const query = document.getElementById('search-input').value.toLowerCase();
-                let found = false;
-
-                data.forEach(item => {
-                    const matches = item.artist.includes(query) || item.song.includes(query);
-                    item.element.style.display = matches ? '' : 'none';
-                    found = found || matches;
+            // ⬇️ NEW: allow pressing Enter in the search box to trigger search
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        window.performSearch();
+                    }
                 });
+            }
+            // ⬆️ end new block
 
+            // Expose performSearch globally so the Search button can call it
+            window.performSearch = function () {
+                const query = document.getElementById('search-input').value.toLowerCase();
                 const resultsContainer = document.getElementById('search-results');
-                resultsContainer.innerHTML = found ? '' : '<p>No results found.</p>';
-            }
 
-            // Add event listener to search input with debounce
-            document.getElementById('search-input').addEventListener('input', debounce(performSearch, 300));
+                // If query is empty, just show everything quickly
+                if (!query) {
+                    data.forEach(item => {
+                        item.element.style.display = '';
+                    });
+                    resultsContainer.innerHTML = '';
+                    return;
+                }
+
+                let found = false;
+                let index = 0;
+
+                // Tweak this if you want smoother vs faster
+                const chunkSize = 100; // rows per frame; lower = smoother on slow phones
+
+                resultsContainer.innerHTML = ''; // clear any previous message
+
+                function processChunk() {
+                    const end = Math.min(index + chunkSize, data.length);
+
+                    for (; index < end; index++) {
+                        const item = data[index];
+                        const matches = item.text.includes(query);
+                        item.element.style.display = matches ? '' : 'none';
+                        if (matches) found = true;
+                    }
+
+                    if (index < data.length) {
+                        // More rows to process – yield back to the browser, then continue
+                        requestAnimationFrame(processChunk);
+                    } else {
+                        // Finished
+                        resultsContainer.innerHTML = found ? '' : '<p>No results found.</p>';
+                    }
+                }
+
+                // Start chunked processing
+                requestAnimationFrame(processChunk);
+            };
         });
-
-        // Debounce function to limit the rate at which the search function is called
-        function debounce(func, delay) {
-            let debounceTimer;
-            return function() {
-                const context = this;
-                const args = arguments;
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => func.apply(context, args), delay);
-            }
-        }
     </script>
 </body>
 </html>
+
